@@ -8,9 +8,6 @@ let counter = 17;
 export function generateMockData(current: STM32Data): STM32Data {
   tick++;
 
-  const wsUrl = import.meta.env.VITE_WS_URL as string | undefined;
-  if (wsUrl && wsUrl !== 'mock') return current;
-
   let { mode, isrActive, isrRemainMs, ledMask, score, lives } = current;
 
   if (isrActive) {
@@ -41,18 +38,73 @@ export function generateMockData(current: STM32Data): STM32Data {
 }
 
 export function useSTM32() {
-  const { data, setData, pushAdcHistory, pushCtrHistory, pushRtHistory } = useSTM32Store();
-  const dataRef = useRef(data);
-  dataRef.current = data;
+  const { setData, pushAdcHistory, pushCtrHistory, pushRtHistory } = useSTM32Store();
+  const dataRef = useRef(useSTM32Store.getState().data);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // Selalu update dataRef saat store berubah
+  useEffect(() => {
+    return useSTM32Store.subscribe((state) => {
+      dataRef.current = state.data;
+    });
+  }, []);
+
+  const wsUrl = import.meta.env.VITE_WS_URL as string;
+  const isMock = !wsUrl || wsUrl === 'mock';
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const next = generateMockData(dataRef.current);
-      setData(next);
-      pushAdcHistory(next.adc);
-      if (next.mode === 2) pushCtrHistory(next.counter);
-      if (tick % 4 === 0) pushRtHistory(next.reactionMs);
-    }, 200);
-    return () => clearInterval(interval);
-  }, [setData, pushAdcHistory, pushCtrHistory, pushRtHistory]);
+    // ── MODE MOCK ──
+    if (isMock) {
+      const interval = setInterval(() => {
+        const next = generateMockData(dataRef.current);
+        setData(next);
+        pushAdcHistory(next.adc);
+        if (next.mode === 2) pushCtrHistory(next.counter);
+        if (tick % 4 === 0) pushRtHistory(next.reactionMs);
+      }, 200);
+      return () => clearInterval(interval);
+    }
+
+    // ── MODE REAL (WebSocket ke CubeMonitor) ──
+    const connect = () => {
+      console.log('[WS] Connecting to', wsUrl); // ← cek di console browser
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      // Simpan ref ke store agar sendCommand bisa kirim command
+      useSTM32Store.getState().setWsRef(wsRef);
+
+      ws.onopen = () => {
+        console.log('[WS] Connected!'); // ← harus muncul jika berhasil
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const incoming: Partial<STM32Data> = JSON.parse(event.data);
+          const next: STM32Data = { ...dataRef.current, ...incoming };
+          setData(next);
+          pushAdcHistory(next.adc);
+          pushCtrHistory(next.counter);
+          pushRtHistory(next.reactionMs);
+        } catch (e) {
+          console.warn('[WS] Parse error:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('[WS] Disconnected, reconnecting in 2s...');
+        setTimeout(connect, 2000);
+      };
+
+      ws.onerror = (e) => {
+        console.error('[WS] Error:', e);
+        ws.close();
+      };
+    };
+
+    connect();
+    return () => {
+      wsRef.current?.close();
+    };
+  }, [isMock, wsUrl, setData, pushAdcHistory, pushCtrHistory, pushRtHistory]);
 }

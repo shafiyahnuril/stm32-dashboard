@@ -17,7 +17,8 @@ interface STM32Store {
   ctrHistory: number[];
   rtHistory: number[];
   isDark: boolean;
-
+  wsRef: { current: WebSocket | null } | null;
+  setWsRef: (ref: { current: WebSocket | null }) => void;
   setData: (d: STM32Data) => void;
   addLog: (type: LogEntry['type'], msg: string) => void;
   pushAdcHistory: (v: number) => void;
@@ -51,6 +52,10 @@ export const useSTM32Store = create<STM32Store>((set, get) => ({
   rtHistory: Array(16).fill(220),
   isDark: false,
 
+  // ✅ WAJIB ADA DI SINI
+  wsRef: null,
+  setWsRef: (ref) => set({ wsRef: ref }),
+
   setData: (d) => set({ data: d }),
 
   addLog: (type, msg) =>
@@ -73,7 +78,12 @@ export const useSTM32Store = create<STM32Store>((set, get) => ({
   toggleTheme: () => set((s) => ({ isDark: !s.isDark })),
 
   sendCommand: (cmd) => {
-    const { addLog, data } = get();
+    const { addLog, data, wsRef } = get();
+
+    if (wsRef?.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(cmd));
+    }
+
     switch (cmd.type) {
       case 'SET_MODE':
         addLog('MODE', `changed → ${cmd.mode}`);
