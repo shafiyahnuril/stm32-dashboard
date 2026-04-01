@@ -12,7 +12,7 @@ export function MetricCards() {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2 mb-3">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
       {metrics.map(({ label, value, sub }) => (
         <div key={label} className="metric-card">
           <div className="metric-label">{label}</div>

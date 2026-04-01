@@ -14,8 +14,8 @@ export function Header() {
   const modeInfo = MODE_LABELS[modeKey] ?? MODE_LABELS['1'];
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] mb-3">
-      <div className="flex items-center gap-3">
+    <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-b border-[var(--border)] mb-4">
+      <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs font-medium text-[var(--text)]">STM32 Dashboard</span>
@@ -26,7 +26,7 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
         <span className={`badge ${modeInfo.cls}`}>{modeInfo.label}</span>
         <button
           onClick={toggleTheme}
