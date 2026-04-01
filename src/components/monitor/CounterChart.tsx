@@ -5,6 +5,7 @@ import {
 
 export function CounterChart() {
   const counter = useSTM32Store((s) => s.data.counter);
+  const mode = useSTM32Store((s) => s.data.mode);
   const history = useSTM32Store((s) => s.ctrHistory);
   const isDark = useSTM32Store((s) => s.isDark);
 
@@ -17,7 +18,7 @@ export function CounterChart() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-3">
-        <span className="section-label">Counter chart · Mode 2</span>
+        <span className="section-label">Counter chart · Mode {mode}</span>
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-[var(--text3)]">current</span>
           <span className="text-lg font-semibold text-[var(--text)] tabular-nums">{counter}</span>

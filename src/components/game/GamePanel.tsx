@@ -1,84 +1,205 @@
+import { useState, useEffect, useRef } from 'react';
 import { useSTM32Store } from '../../store/stm32Store';
-import {
-  BarChart, Bar, ResponsiveContainer, Tooltip, ReferenceLine, Cell,
-} from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Info, Gamepad2, Zap } from 'lucide-react';
 
 export function GamePanel() {
-  const { score, lives } = useSTM32Store((s) => s.data);
-  const rtHistory = useSTM32Store((s) => s.rtHistory);
-  const isDark = useSTM32Store((s) => s.isDark);
+  const { score, lives, mode } = useSTM32Store((s) => s.data);
+  const reactHistory = useSTM32Store((s) => s.rtHistory);
 
-  const avg = Math.round(rtHistory.reduce((a, b) => a + b, 0) / rtHistory.length);
-  const tooltipBg = isDark ? '#1e1e1b' : '#ffffff';
-  const tooltipBorder = isDark ? '#2e2e2b' : '#e5e7eb';
+  const prevScore = useRef(score);
+  const prevLives = useRef(lives);
+  const prevMode = useRef(mode);
 
-  const chartData = rtHistory.map((v, i) => ({ i, v }));
+  const [gameState, setGameState] = useState<'IDLE' | 'COUNTDOWN' | 'PLAYING'>('IDLE');
+  const [countdownNum, setCountdownNum] = useState<number | string>(3);
+  const [feedback, setFeedback] = useState<'CORRECT' | 'WRONG' | null>(null);
 
-  const livesDisplay = Array.from({ length: 3 }, (_, i) => i < lives);
+  const isGameMode = typeof mode === 'number' && mode >= 6 && mode <= 10;
 
+  // Hitung rata-rata waktu reaksi
+  const avgRt = reactHistory.length > 0 
+    ? Math.round(reactHistory.reduce((a, b) => a + b, 0) / reactHistory.length) 
+    : 0;
+
+  // Feedback logika (Correct/Wrong) ketika score/lives berubah selama bermain
+  useEffect(() => {
+    if (gameState !== 'PLAYING') {
+      prevScore.current = score;
+      prevLives.current = lives;
+      return;
+    }
+
+    if (score > prevScore.current) {
+      setFeedback('CORRECT');
+      setTimeout(() => setFeedback(null), 800);
+    } 
+    if (lives < prevLives.current) {
+      setFeedback('WRONG');
+      setTimeout(() => setFeedback(null), 800);
+    }
+    
+    prevScore.current = score;
+    prevLives.current = lives;
+  }, [score, lives, gameState]);
+
+  // Handle otomatisasi mulai game ketika pindah mode
+  useEffect(() => {
+    if (isGameMode && mode !== prevMode.current) {
+      startCountdown();
+    } else if (!isGameMode) {
+      setGameState('IDLE');
+    }
+    prevMode.current = mode;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, isGameMode]);
+
+  const startCountdown = () => {
+    setGameState('COUNTDOWN');
+    setCountdownNum(3);
+    
+    setTimeout(() => setCountdownNum(2), 1000);
+    setTimeout(() => setCountdownNum(1), 2000);
+    setTimeout(() => setCountdownNum('GO!'), 3000);
+    setTimeout(() => setGameState('PLAYING'), 4000);
+  };
+
+  const getGameInfo = (m: number) => {
+    switch (m) {
+      case 6: return { title: 'Rhythm Tap', icon: '🎵', desc: 'Lampu akan memberikan pola ketukan. Tekan Tombol 1 setelah pola selesai untuk menirunya. Jika lupa, tekan Tombol 2 untuk mendengar polanya lagi.' };
+      case 7: return { title: 'Charge & Release', icon: '⚡', desc: 'Tahan Tombol 1 untuk mengisi energi (lampu menyala perlahan ke kanan). Lepaskan Tombol 1 tepat saat lampu menyentuh titik target!' };
+      case 8: return { title: 'Whack-a-LED', icon: '🔨', desc: 'Lampu akan menyala acak. Jika lampu kiri (1-4) menyala, cepat tekan Tombol 1. Jika lampu kanan (5-8) menyala, cepat tekan Tombol 2!' };
+      case 9: return { title: 'Tebak Biner', icon: '🔢', desc: 'Terjemahkan angka desimal yang muncul. Tekan Tombol 1 untuk memasukkan angka "1", dan Tombol 2 untuk angka "0".' };
+      case 10: return { title: 'Bonus Mode', icon: '🎁', desc: 'Level tantangan ekstra. Mainkan dengan intuisi dan refleks kecepatan terbaikmu.' };
+      default: return null;
+    }
+  };
+
+  const gameInfo = getGameInfo(mode as number);
+  
+  // Sistem Title/Nama Pangkat dari Score yang serasi dengan tema UI
+  const getScoreTitle = (s: number) => {
+    if (s < 20) return { title: 'NEWBIE', color: 'text-gray-500 dark:text-gray-400' };
+    if (s < 50) return { title: 'NICE', color: 'text-blue-500 dark:text-blue-400' };
+    if (s < 100) return { title: 'GREAT', color: 'text-emerald-500 dark:text-emerald-400' };
+    if (s < 200) return { title: 'AWESOME', color: 'text-orange-500 dark:text-orange-400' };
+    return { title: 'GODLIKE', color: 'text-red-500 font-black' };
+  };
+
+  const scoreData = getScoreTitle(score);
+  const derivedLevel = Math.floor(score / 50) + 1;
+
+  // KOMPONEN INACTIVE (Dashboard Normal)
+  if (!isGameMode) {
+    return (
+      <div className="card h-full min-h-[300px] flex flex-col items-center justify-center p-8 text-center text-[var(--text3)]">
+        <Gamepad2 className="w-12 h-12 mb-3 opacity-50" />
+        <h3 className="text-[var(--text1)] font-semibold text-base mb-1">Arcade Standby</h3>
+        <p className="text-xs max-w-[200px] leading-relaxed">
+          Pilih mode game (Mode 6 - 10) pada pengatur mode untuk memunculkan arena.
+        </p>
+      </div>
+    );
+  }
+
+  // KOMPONEN ACTIVE (Tampilan Arena Yang Ringkas dan Serasi)
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-3">
-        <span className="section-label">Game panel</span>
-        <span className="badge badge-green text-[10px]">Whack-a-LED</span>
-      </div>
+    <div className="card relative flex flex-col h-full min-h-[380px] overflow-hidden">
+      {/* Countdown Overlay */}
+      <AnimatePresence>
+        {gameState === 'COUNTDOWN' && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--bg)]/80 backdrop-blur-sm"
+          >
+            <motion.span 
+              key={countdownNum}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              className="text-7xl md:text-8xl font-black text-purple-500 drop-shadow-lg"
+            >
+              {countdownNum}
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="metric-mini">
-          <div className="metric-mini-label">Score</div>
-          <div className="metric-mini-val tabular-nums">{score}</div>
-        </div>
-        <div className="metric-mini">
-          <div className="metric-mini-label">Lives</div>
-          <div className="flex gap-1 mt-1">
-            {livesDisplay.map((alive, i) => (
-              <div key={i} className={`w-2.5 h-2.5 rounded-full ${alive ? 'bg-emerald-500' : 'bg-[var(--border2)]'}`} />
-            ))}
+      {/* Header Info */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{gameInfo?.icon}</span>
+          <div>
+            <h2 className="text-[var(--text1)] font-bold text-base leading-tight">{gameInfo?.title}</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="badge badge-purple text-[9px] px-1.5 py-0">Level {derivedLevel}</span>
+              <span className="text-[10px] text-[var(--text3)] font-medium">Bermain</span>
+            </div>
           </div>
         </div>
-        <div className="metric-mini">
-          <div className="metric-mini-label">Avg RT</div>
-          <div className="metric-mini-val tabular-nums">
-            {avg}<span className="text-[10px] font-normal">ms</span>
-          </div>
+
+        {/* Feedback Mini Pop-up */}
+        <div className="w-20 text-right">
+          <AnimatePresence>
+            {feedback && (
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -10, opacity: 0 }}
+                className={`text-sm font-black italic ${feedback === 'CORRECT' ? 'text-emerald-500' : 'text-red-500'}`}
+              >
+                {feedback === 'CORRECT' ? '+ NICE!' : '- OOPS!'}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      <span className="section-label mb-2 block">Reaction time history</span>
+      {/* Instructions Box */}
+      <div className="flex-1 bg-[var(--bg2)] rounded-lg p-3 lg:p-4 mb-4 border border-[var(--border2)]">
+        <h3 className="text-[var(--text2)] text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-blue-500" /> Cara Bermain
+        </h3>
+        <p className="text-[var(--text1)] text-xs leading-relaxed mb-4">
+          {gameInfo?.desc}
+        </p>
 
-      <div className="h-16">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }} barCategoryGap="20%">
-            <Tooltip
-              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6, fontSize: 11 }}
-              formatter={(v) => [`${String(v ?? '-') }ms`, 'reaction']}
-              labelFormatter={() => ''}
-            />
-            <ReferenceLine y={250} stroke={isDark ? '#94a3b8' : '#64748b'} strokeDasharray="3 2" strokeWidth={1} />
-            <Bar dataKey="v" radius={[2, 2, 0, 0]} isAnimationActive={false}>
-              {chartData.map((entry, i) => (
-                <Cell
-                  key={i}
-                  fill={entry.v < 200
-                    ? '#10b981'
-                    : entry.v < 300
-                    ? (isDark ? '#60a5fa' : '#3b82f6')
-                    : '#ef4444'}
+        <h3 className="text-[var(--text2)] text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5 text-amber-500" /> Kendali Papan
+        </h3>
+        <p className="text-[var(--text3)] text-xs leading-relaxed">
+          Gunakan tombol di perangkat STM32. Untuk ganti game: <b>Tekan Tombol 1 & 2 bersamaan</b>.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3 mt-auto">
+        <div className="metric-mini !items-start bg-[var(--bg2)]">
+          <div className="metric-mini-label w-full text-left">Rank & Skor</div>
+          <div className="flex justify-between items-baseline w-full mt-1">
+            <span className={`text-base font-black ${scoreData.color}`}>{scoreData.title}</span>
+            <span className="text-xs font-semibold text-[var(--text2)]">{score} pt</span>
+          </div>
+        </div>
+
+        <div className="metric-mini !items-start bg-[var(--bg2)]">
+          <div className="metric-mini-label w-full text-left">Nyawa & Kecepatan</div>
+          <div className="flex justify-between items-center w-full mt-1">
+            <div className="flex gap-1.5 justify-start">
+              {[...Array(3)].map((_, i) => (
+                <Heart 
+                  key={i} 
+                  className={`w-4 h-4 transition-colors ${i < lives ? 'fill-red-500 text-red-500' : 'fill-transparent text-[var(--border2)]'}`} 
                 />
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="flex justify-between items-center text-[9px] text-[var(--text3)] mt-1">
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" />fast &lt;200ms
-        </span>
-        <span className="text-[var(--text3)]">— 250ms human avg</span>
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-sm bg-red-500 inline-block" />slow &gt;300ms
-        </span>
+            </div>
+            <div className="text-sm font-bold text-[var(--text1)] tabular-nums">
+              {avgRt}<span className="text-[10px] text-[var(--text3)] font-normal ml-0.5">ms</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

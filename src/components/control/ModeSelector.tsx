@@ -2,9 +2,16 @@ import { useState, useEffect } from 'react';
 import { useSTM32Store } from '../../store/stm32Store';
 
 const MODES = [
-  { n: 1, label: 'Mode 1', sub: 'Shift left' },
+  { n: 1, label: 'Mode 1', sub: 'Shift Left' },
   { n: 2, label: 'Mode 2', sub: 'Counter' },
-  { n: 3, label: 'Mode 3', sub: 'ADC' },
+  { n: 3, label: 'Mode 3', sub: 'ADC Control' },
+  { n: 4, label: 'Mode 4', sub: 'Train Crash' },
+  { n: 5, label: 'Mode 5', sub: 'Binary Counter' },
+  { n: 6, label: 'Mode 6', sub: 'Rhythm Tap' },
+  { n: 7, label: 'Mode 7', sub: 'Charge & Rel' },
+  { n: 8, label: 'Mode 8', sub: 'Whack-a-LED' },
+  { n: 9, label: 'Mode 9', sub: 'Binary Game' },
+  { n: 10, label: 'Mode 10', sub: 'Bonus / Extra' },
 ] as const;
 
 export function ModeSelector() {
@@ -26,16 +33,38 @@ export function ModeSelector() {
       <span className="section-label mb-3 block">Mode selector</span>
 
       <div className="grid grid-cols-3 gap-1.5 mb-3">
-        {MODES.map(({ n, label, sub }) => (
+        {MODES.slice(0, 5).map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: 'SET_MODE', mode: n })}
+            onClick={() => sendCommand({ type: 'SET_MODE', mode: n as any })}
             disabled={data.isrActive}
             className={`
               py-2 rounded-lg border text-center text-xs font-medium transition-all
               disabled:opacity-40 disabled:cursor-not-allowed
               ${currentMode === n
                 ? 'bg-[var(--accent-bg)] border-[var(--accent)] text-[var(--accent-text)]'
+                : 'bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]'
+              }
+            `}
+          >
+            <div>{label}</div>
+            <div className="text-[9px] font-normal opacity-70 mt-0.5">{sub}</div>
+          </button>
+        ))}
+      </div>
+
+      <span className="section-label mb-3 block mt-2">Game Modes</span>
+      <div className="grid grid-cols-2 gap-1.5 mb-3">
+        {MODES.slice(5).map(({ n, label, sub }) => (
+          <button
+            key={n}
+            onClick={() => sendCommand({ type: 'SET_MODE', mode: n as any })}
+            disabled={data.isrActive}
+            className={`
+              py-2 rounded-lg border text-center text-xs font-medium transition-all
+              disabled:opacity-40 disabled:cursor-not-allowed
+              ${currentMode === n
+                ? 'bg-purple-900/40 border-purple-500/50 text-purple-400'
                 : 'bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]'
               }
             `}

@@ -2,7 +2,19 @@ import { useSTM32Store } from '../../store/stm32Store';
 
 export function MetricCards() {
   const { data } = useSTM32Store();
-  const modeLabel = data.isrActive ? 'ISR' : ['', 'Shift', 'Counter', 'ADC'][data.mode as number] ?? '—';
+  const modeLabels: Record<number, string> = {
+    1: 'Shift',
+    2: 'Counter',
+    3: 'ADC',
+    4: 'Train Crash',
+    5: 'Binary Cnt',
+    6: 'Rhythm',
+    7: 'Charge',
+    8: 'Whack',
+    9: 'Binary Game',
+    10: 'Bonus Game'
+  };
+  const modeLabel = data.isrActive ? 'ISR' : modeLabels[data.mode as number] ?? '—';
 
   const metrics = [
     { label: 'Mode',      value: String(data.isrActive ? 'ISR' : data.mode), sub: modeLabel },

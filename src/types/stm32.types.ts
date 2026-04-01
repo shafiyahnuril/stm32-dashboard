@@ -1,4 +1,4 @@
-export type AppMode = 1 | 2 | 3 | 'ISR';
+export type AppMode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'ISR';
 
 export interface STM32Data {
   mode: AppMode;
@@ -8,6 +8,7 @@ export interface STM32Data {
   score: number;
   lives: number;
   reactionMs: number;
+  gameStatus?: string;
   isrActive: boolean;
   isrRemainMs: number;
 }
@@ -20,7 +21,7 @@ export interface LogEntry {
 }
 
 export type Command =
-  | { type: 'SET_MODE'; mode: 1 | 2 | 3 }
+  | { type: 'SET_MODE'; mode: AppMode }
   | { type: 'TRIGGER_ISR' }
   | { type: 'LED_ALL_ON' }
   | { type: 'LED_ALL_OFF' }
