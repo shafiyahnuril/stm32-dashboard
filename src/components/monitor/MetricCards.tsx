@@ -8,11 +8,11 @@ export function MetricCards() {
     3: 'ADC',
     4: 'Train Crash',
     5: 'Binary Cnt',
-    6: 'Rhythm',
-    7: 'Charge',
-    8: 'Whack',
-    9: 'Binary Game',
-    10: 'Bonus Game'
+    6: 'LED Pat',
+    7: 'Rhythm',
+    8: 'Charge',
+    9: 'Whack',
+    10: 'Binary Game'
   };
   const modeLabel = data.isrActive ? 'ISR' : modeLabels[data.mode as number] ?? '—';
 

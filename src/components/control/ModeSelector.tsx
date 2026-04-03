@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useSTM32Store } from '../../store/stm32Store';
+import { useState, useEffect } from "react";
+import { useSTM32Store } from "../../store/stm32Store";
 
 const MODES = [
-  { n: 1, label: 'Mode 1', sub: 'Shift Left' },
-  { n: 2, label: 'Mode 2', sub: 'Counter' },
-  { n: 3, label: 'Mode 3', sub: 'ADC Control' },
-  { n: 4, label: 'Mode 4', sub: 'Train Crash' },
-  { n: 5, label: 'Mode 5', sub: 'Binary Counter' },
-  { n: 6, label: 'Mode 6', sub: 'Rhythm Tap' },
-  { n: 7, label: 'Mode 7', sub: 'Charge & Rel' },
-  { n: 8, label: 'Mode 8', sub: 'Whack-a-LED' },
-  { n: 9, label: 'Mode 9', sub: 'Binary Game' },
-  { n: 10, label: 'Mode 10', sub: 'Bonus / Extra' },
+  { n: 1, label: "Mode 1", sub: "Shift Left" },
+  { n: 2, label: "Mode 2", sub: "Counter" },
+  { n: 3, label: "Mode 3", sub: "ADC Control" },
+  { n: 4, label: "Mode 4", sub: "Train Crash" },
+  { n: 5, label: "Mode 5", sub: "Binary Counter" },
+  { n: 6, label: "Mode 6", sub: "LED Pattern" },
+  { n: 7, label: "Mode 7", sub: "Rhythm Tap" },
+  { n: 8, label: "Mode 8", sub: "Charge & Rel" },
+  { n: 9, label: "Mode 9", sub: "Whack-a-LED" },
+  { n: 10, label: "Mode 10", sub: "Binary Game" },
 ] as const;
 
 export function ModeSelector() {
   const { data, sendCommand } = useSTM32Store();
-  const currentMode = data.mode === 'ISR' ? null : data.mode;
+  const currentMode = data.mode === "ISR" ? null : data.mode;
 
   const [isrProgress, setIsrProgress] = useState(0);
 
@@ -36,19 +36,22 @@ export function ModeSelector() {
         {MODES.slice(0, 5).map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: 'SET_MODE', mode: n as any })}
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
             disabled={data.isrActive}
             className={`
               py-2 rounded-lg border text-center text-xs font-medium transition-all
               disabled:opacity-40 disabled:cursor-not-allowed
-              ${currentMode === n
-                ? 'bg-[var(--accent-bg)] border-[var(--accent)] text-[var(--accent-text)]'
-                : 'bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]'
+              ${
+                currentMode === n
+                  ? "bg-[var(--accent-bg)] border-[var(--accent)] text-[var(--accent-text)]"
+                  : "bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]"
               }
             `}
           >
             <div>{label}</div>
-            <div className="text-[9px] font-normal opacity-70 mt-0.5">{sub}</div>
+            <div className="text-[9px] font-normal opacity-70 mt-0.5">
+              {sub}
+            </div>
           </button>
         ))}
       </div>
@@ -58,45 +61,50 @@ export function ModeSelector() {
         {MODES.slice(5).map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: 'SET_MODE', mode: n as any })}
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
             disabled={data.isrActive}
             className={`
               py-2 rounded-lg border text-center text-xs font-medium transition-all
               disabled:opacity-40 disabled:cursor-not-allowed
-              ${currentMode === n
-                ? 'bg-purple-900/40 border-purple-500/50 text-purple-400'
-                : 'bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]'
+              ${
+                currentMode === n
+                  ? "bg-purple-900/40 border-purple-500/50 text-purple-400"
+                  : "bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]"
               }
             `}
           >
             <div>{label}</div>
-            <div className="text-[9px] font-normal opacity-70 mt-0.5">{sub}</div>
+            <div className="text-[9px] font-normal opacity-70 mt-0.5">
+              {sub}
+            </div>
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-2 gap-1.5 mb-3">
         <button
-          onClick={() => sendCommand({ type: 'TRIGGER_ISR' })}
+          onClick={() => sendCommand({ type: "TRIGGER_ISR" })}
           disabled={data.isrActive}
           className="ctrl-btn ctrl-btn-danger"
         >
-          {data.isrActive ? `ISR ${(data.isrRemainMs / 1000).toFixed(1)}s` : 'Trigger ISR'}
+          {data.isrActive
+            ? `ISR ${(data.isrRemainMs / 1000).toFixed(1)}s`
+            : "Trigger ISR"}
         </button>
         <button
-          onClick={() => sendCommand({ type: 'LED_ALL_ON' })}
+          onClick={() => sendCommand({ type: "LED_ALL_ON" })}
           className="ctrl-btn ctrl-btn-success"
         >
           All LED on
         </button>
         <button
-          onClick={() => sendCommand({ type: 'LED_ALL_OFF' })}
+          onClick={() => sendCommand({ type: "LED_ALL_OFF" })}
           className="ctrl-btn"
         >
           All LED off
         </button>
         <button
-          onClick={() => sendCommand({ type: 'RESET_STATS' })}
+          onClick={() => sendCommand({ type: "RESET_STATS" })}
           className="ctrl-btn"
         >
           Reset stats
@@ -112,7 +120,8 @@ export function ModeSelector() {
             />
           </div>
           <p className="text-center text-[10px] text-amber-500">
-            ISR active — returning to mode in {(data.isrRemainMs / 1000).toFixed(1)}s
+            ISR active — returning to mode in{" "}
+            {(data.isrRemainMs / 1000).toFixed(1)}s
           </p>
         </div>
       )}

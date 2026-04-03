@@ -15,7 +15,7 @@ export function GamePanel() {
   const [countdownNum, setCountdownNum] = useState<number | string>(3);
   const [feedback, setFeedback] = useState<'CORRECT' | 'WRONG' | null>(null);
 
-  const isGameMode = typeof mode === 'number' && mode >= 6 && mode <= 10;
+  const isGameMode = typeof mode === 'number' && mode >= 7 && mode <= 10;
 
   // Hitung rata-rata waktu reaksi
   const avgRt = reactHistory.length > 0 
@@ -66,11 +66,10 @@ export function GamePanel() {
 
   const getGameInfo = (m: number) => {
     switch (m) {
-      case 6: return { title: 'Rhythm Tap', icon: '🎵', desc: 'Lampu akan memberikan pola ketukan. Tekan Tombol 1 setelah pola selesai untuk menirunya. Jika lupa, tekan Tombol 2 untuk mendengar polanya lagi.' };
-      case 7: return { title: 'Charge & Release', icon: '⚡', desc: 'Tahan Tombol 1 untuk mengisi energi (lampu menyala perlahan ke kanan). Lepaskan Tombol 1 tepat saat lampu menyentuh titik target!' };
-      case 8: return { title: 'Whack-a-LED', icon: '🔨', desc: 'Lampu akan menyala acak. Jika lampu kiri (1-4) menyala, cepat tekan Tombol 1. Jika lampu kanan (5-8) menyala, cepat tekan Tombol 2!' };
-      case 9: return { title: 'Tebak Biner', icon: '🔢', desc: 'Terjemahkan angka desimal yang muncul. Tekan Tombol 1 untuk memasukkan angka "1", dan Tombol 2 untuk angka "0".' };
-      case 10: return { title: 'Bonus Mode', icon: '🎁', desc: 'Level tantangan ekstra. Mainkan dengan intuisi dan refleks kecepatan terbaikmu.' };
+      case 7:  return { title: 'Rhythm Tap', icon: '🎵', desc: 'Lampu akan memberikan pola ketukan. Tekan Tombol 1 setelah pola selesai untuk menirunya. Jika lupa, tekan Tombol 2 untuk mendengar polanya lagi.' };
+      case 8:  return { title: 'Charge & Release', icon: '⚡', desc: 'Tahan Tombol 1 untuk mengisi energi (lampu menyala perlahan ke kanan). Lepaskan Tombol 1 tepat saat lampu menyentuh titik target!' };
+      case 9:  return { title: 'Whack-a-LED', icon: '🔨', desc: 'Lampu akan menyala acak. Jika lampu kiri (1-4) menyala, cepat tekan Tombol 1. Jika lampu kanan (5-8) menyala, cepat tekan Tombol 2!' };
+      case 10: return { title: 'Tebak Biner', icon: '🔢', desc: 'Terjemahkan angka desimal yang muncul. Tekan Tombol 1 untuk memasukkan angka "1", dan Tombol 2 untuk angka "0".' };
       default: return null;
     }
   };
