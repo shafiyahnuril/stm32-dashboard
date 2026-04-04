@@ -1,50 +1,59 @@
 import { useSTM32Store } from '../../store/stm32Store';
 import {
-  LineChart, Line, ResponsiveContainer, Tooltip, ReferenceLine, YAxis,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
 export function CounterChart() {
-  const counter = useSTM32Store((s) => s.data.counter);
-  const mode = useSTM32Store((s) => s.data.mode);
-  const history = useSTM32Store((s) => s.ctrHistory);
   const isDark = useSTM32Store((s) => s.isDark);
+  const data = useSTM32Store((s) => s.ctrHistory);
+  const chartData = data.map((v, i: number) => ({ i, value: v }));
 
-  const chartData = history.map((v, i) => ({ i, v }));
-  const stroke = isDark ? '#a78bfa' : '#7c3aed';
-  const refColor = isDark ? '#34d399' : '#059669';
-  const tooltipBg = isDark ? '#1e1e1b' : '#ffffff';
-  const tooltipBorder = isDark ? '#2e2e2b' : '#e5e7eb';
+  const colors = {
+    grid: isDark ? '#334155' : '#e2e8f0',
+    axis: isDark ? '#64748b' : '#94a3b8',
+    tooltipBg: isDark ? '#1e293b' : '#ffffff',
+    tooltipBorder: isDark ? '#334155' : '#cbd5e1',
+    line: isDark ? '#f43f5e' : '#f43f5e', // rose-500
+    ref: isDark ? '#f59e0b' : '#d97706',  // amber
+  };
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-3">
-        <span className="section-label">Counter chart · Mode {mode}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[var(--text3)]">current</span>
-          <span className="text-lg font-semibold text-[var(--text)] tabular-nums">{counter}</span>
-        </div>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-full">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Counter Status</h3>
+        <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-[10px] font-bold text-amber-600 dark:text-amber-500">Threshold 24</span>
       </div>
 
-      <div className="h-24">
+      <div className="h-[300px] w-full mt-2 -ml-2">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-            <YAxis domain={[0, 25]} tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
+          <LineChart data={chartData}>
+            <XAxis dataKey="i" stroke={colors.axis} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+            <YAxis stroke={colors.axis} tick={{ fontSize: 10 }} width={30} tickLine={false} axisLine={false} />
             <Tooltip
-              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6, fontSize: 11 }}
-              formatter={(v) => [Number(v ?? 0), 'counter']}
+              contentStyle={{
+                backgroundColor: colors.tooltipBg,
+                borderColor: colors.tooltipBorder,
+                borderRadius: '8px',
+                fontSize: '12px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                color: isDark ? '#fff' : '#000',
+              }}
+              cursor={{ stroke: colors.grid, strokeWidth: 1, strokeDasharray: '4 4' }}
               labelFormatter={() => ''}
             />
-            <ReferenceLine y={24} stroke={refColor} strokeDasharray="3 3" strokeWidth={1} label={{ value: 'NIM 24', fontSize: 9, fill: refColor, position: 'right' }} />
-            <ReferenceLine y={19} stroke={isDark ? '#fb923c' : '#ea580c'} strokeDasharray="3 3" strokeWidth={1} label={{ value: 'partner 19', fontSize: 9, fill: isDark ? '#fb923c' : '#ea580c', position: 'right' }} />
-            <Line type="monotone" dataKey="v" stroke={stroke} strokeWidth={2} dot={false} isAnimationActive={false} />
+            <ReferenceLine y={24} stroke={colors.ref} strokeDasharray="3 3" strokeWidth={1} label={{ value: 'Target', position: 'insideTopLeft', fill: colors.ref, fontSize: 10 }} />
+            <Line
+              type="stepAfter"
+              dataKey="value"
+              stroke={colors.line}
+              strokeWidth={3}
+              dot={false}
+              isAnimationActive={false}
+            />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="flex justify-between text-[9px] text-[var(--text3)] mt-1">
-        <span>40s ago</span>
-        <span>now</span>
       </div>
     </div>
   );
 }
+

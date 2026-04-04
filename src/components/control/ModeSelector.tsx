@@ -3,15 +3,16 @@ import { useSTM32Store } from "../../store/stm32Store";
 
 const MODES = [
   { n: 1, label: "Mode 1", sub: "Shift Left" },
-  { n: 2, label: "Mode 2", sub: "Counter" },
+  { n: 2, label: "Mode 2", sub: "Counter Chart" },
   { n: 3, label: "Mode 3", sub: "ADC Control" },
   { n: 4, label: "Mode 4", sub: "Train Crash" },
   { n: 5, label: "Mode 5", sub: "Binary Counter" },
   { n: 6, label: "Mode 6", sub: "LED Pattern" },
-  { n: 7, label: "Mode 7", sub: "Rhythm Tap" },
-  { n: 8, label: "Mode 8", sub: "Charge & Rel" },
-  { n: 9, label: "Mode 9", sub: "Whack-a-LED" },
-  { n: 10, label: "Mode 10", sub: "Binary Game" },
+] as const;
+
+const GAME_MODES = [
+  { n: 7, label: "Rhythm Tap", sub: "Mode 7" },
+  { n: 10, label: "Binary Game", sub: "Mode 10" },
 ] as const;
 
 export function ModeSelector() {
@@ -22,109 +23,93 @@ export function ModeSelector() {
 
   useEffect(() => {
     if (data.isrActive) {
-      setIsrProgress(Math.round(((5000 - data.isrRemainMs) / 5000) * 100));
+      setIsrProgress(Math.round(((5000 - data.isrRemainMs) / 5000) * 100));     
     } else {
       setIsrProgress(0);
     }
   }, [data.isrActive, data.isrRemainMs]);
 
   return (
-    <div className="card">
-      <span className="section-label mb-3 block">Mode selector</span>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50">
+      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80">Modes</h3>
 
-      <div className="grid grid-cols-3 gap-1.5 mb-3">
-        {MODES.slice(0, 5).map(({ n, label, sub }) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        {MODES.map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}   
             disabled={data.isrActive}
-            className={`
-              py-2 rounded-lg border text-center text-xs font-medium transition-all
-              disabled:opacity-40 disabled:cursor-not-allowed
-              ${
+            className={`p-3 rounded-xl border text-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
                 currentMode === n
-                  ? "bg-[var(--accent-bg)] border-[var(--accent)] text-[var(--accent-text)]"
-                  : "bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]"
-              }
-            `}
+                  ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105"
+                  : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm"
+              }`}
           >
-            <div>{label}</div>
-            <div className="text-[9px] font-normal opacity-70 mt-0.5">
+            <div className="font-semibold text-sm">{label}</div>
+            <div className={`text-[10px] mt-1 ${currentMode === n ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
               {sub}
             </div>
           </button>
         ))}
       </div>
 
-      <span className="section-label mb-3 block mt-2">Game Modes</span>
-      <div className="grid grid-cols-2 gap-1.5 mb-3">
-        {MODES.slice(5).map(({ n, label, sub }) => (
+      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80 mt-2">Game Modes</h3>
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {GAME_MODES.map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}   
             disabled={data.isrActive}
-            className={`
-              py-2 rounded-lg border text-center text-xs font-medium transition-all
-              disabled:opacity-40 disabled:cursor-not-allowed
-              ${
+            className={`p-4 rounded-xl border text-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
                 currentMode === n
-                  ? "bg-purple-900/40 border-purple-500/50 text-purple-400"
-                  : "bg-[var(--bg3)] border-[var(--border2)] text-[var(--text2)] hover:bg-[var(--bg2)]"
-              }
-            `}
+                  ? "bg-purple-500 border-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105"
+                  : "bg-purple-50/50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40"
+              }`}
           >
-            <div>{label}</div>
-            <div className="text-[9px] font-normal opacity-70 mt-0.5">
+            <div className="font-semibold text-md">{label}</div>
+            <div className={`text-xs mt-1 ${currentMode === n ? 'text-purple-100' : 'text-purple-400 dark:text-purple-500'}`}>
               {sub}
             </div>
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 mb-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <button
           onClick={() => sendCommand({ type: "TRIGGER_ISR" })}
           disabled={data.isrActive}
-          className="ctrl-btn ctrl-btn-danger"
+          className="col-span-2 py-4 px-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-md shadow-red-500/20 transition-all border border-red-600 disabled:opacity-50"
         >
-          {data.isrActive
-            ? `ISR ${(data.isrRemainMs / 1000).toFixed(1)}s`
-            : "Trigger ISR"}
+          {data.isrActive ? `ISR Active (${(data.isrRemainMs / 1000).toFixed(1)}s)` : "TRIGGER ISR"}
         </button>
         <button
           onClick={() => sendCommand({ type: "LED_ALL_ON" })}
-          className="ctrl-btn ctrl-btn-success"
+          className="col-span-1 py-3 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-colors"
         >
-          All LED on
+          All LED ON
         </button>
         <button
           onClick={() => sendCommand({ type: "LED_ALL_OFF" })}
-          className="ctrl-btn"
+          className="col-span-1 py-3 rounded-xl text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white shadow-sm transition-colors"
         >
-          All LED off
-        </button>
-        <button
-          onClick={() => sendCommand({ type: "RESET_STATS" })}
-          className="ctrl-btn"
-        >
-          Reset stats
+          All LED OFF
         </button>
       </div>
 
       {data.isrActive && (
-        <div>
-          <div className="h-1 rounded-full bg-[var(--border)] overflow-hidden mb-1">
+        <div className="mt-4">
+          <div className="h-2 rounded-full bg-slate-100 dark:bg-gray-700 overflow-hidden mb-2">
             <div
-              className="h-full rounded-full bg-amber-500 transition-all duration-200"
+              className="h-full rounded-full bg-red-500 transition-all duration-200 ease-out"
               style={{ width: `${isrProgress}%` }}
             />
           </div>
-          <p className="text-center text-[10px] text-amber-500">
-            ISR active — returning to mode in{" "}
-            {(data.isrRemainMs / 1000).toFixed(1)}s
+          <p className="text-center text-xs font-medium text-red-500 animate-pulse">
+            ISR Active  Returning in {(data.isrRemainMs / 1000).toFixed(1)}s
           </p>
         </div>
       )}
     </div>
   );
 }
+

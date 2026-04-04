@@ -5,14 +5,14 @@ export function SpeedSlider() {
   const [chartWindow, setChartWindow] = useState(30);
 
   return (
-    <div className="card">
-      <span className="section-label mb-3 block">Speed control</span>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50">
+      <span className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80 block">Speed control</span>
 
       <div className="space-y-3">
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[11px] text-[var(--text2)]">Game speed</label>
-            <span className="text-[11px] font-medium text-[var(--text)]">{gameSpeed}</span>
+            <label className="text-[11px] text-slate-500 dark:text-slate-400">Game speed</label>
+            <span className="text-[11px] font-medium text-slate-900 dark:text-white">{gameSpeed}</span>
           </div>
           <input
             type="range" min={1} max={10} step={1}
@@ -24,8 +24,8 @@ export function SpeedSlider() {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[11px] text-[var(--text2)]">Chart window</label>
-            <span className="text-[11px] font-medium text-[var(--text)]">{chartWindow}s</span>
+            <label className="text-[11px] text-slate-500 dark:text-slate-400">Chart window</label>
+            <span className="text-[11px] font-medium text-slate-900 dark:text-white">{chartWindow}s</span>
           </div>
           <input
             type="range" min={10} max={60} step={5}

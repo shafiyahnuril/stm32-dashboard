@@ -1,7 +1,5 @@
 import { useSTM32Store } from '../../store/stm32Store';
-import {
-  AreaChart, Area, ResponsiveContainer, Tooltip, ReferenceLine,
-} from 'recharts';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 export function ADCGauge() {
   const adc = useSTM32Store((s) => s.data.adc);
@@ -9,64 +7,37 @@ export function ADCGauge() {
   const isDark = useSTM32Store((s) => s.isDark);
 
   const pct = Math.round((adc / 4095) * 100);
-  const ledCount = adc === 0 ? 0 : adc > 895 ? 8 : Math.max(1, Math.round((adc / 895) * 7));
-
   const chartData = history.map((v, i) => ({ i, v }));
-  const stroke = isDark ? '#60a5fa' : '#3b82f6';
-  const refColor = isDark ? '#f59e0b' : '#d97706';
-  const tooltipBg = isDark ? '#1e1e1b' : '#ffffff';
-  const tooltipBorder = isDark ? '#2e2e2b' : '#e5e7eb';
+  
+  const strokeColor = isDark ? '#818cf8' : '#6366f1';
+  const fillStart = isDark ? '#4f46e5' : '#818cf8';
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-2">
-        <span className="section-label">ADC · potentiometer</span>
-        <span className="text-[11px] font-medium text-[var(--text2)]">{pct}%</span>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">ADC / Potentiometer</h3>
+        <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-md">{pct}%</span>
       </div>
 
-      <div className="h-2 rounded-full bg-[var(--bg3)] border border-[var(--border)] overflow-hidden mb-1">
+      <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
         <div
-          className="h-full rounded-full bg-blue-500 transition-all duration-300"
+          className="h-full bg-indigo-500 transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      <div className="flex justify-between text-[10px] text-[var(--text3)] mb-4">
-        <span>0</span>
-        <span className="font-medium text-[var(--text2)]">{adc} / 4095</span>
-        <span>4095</span>
-      </div>
-
-      <div className="flex items-center justify-between mb-2">
-        <span className="section-label">ADC history</span>
-        <span className="text-[10px] text-[var(--text3)]">
-          {adc > 895 ? '8 LED on' : `${ledCount} LED on`}
-        </span>
-      </div>
-
-      <div className="h-20">
+      <div className="h-[140px] w-full mt-2 opacity-90">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+          <AreaChart data={chartData}>
             <defs>
-              <linearGradient id="adcGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={stroke} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={stroke} stopOpacity={0} />
+              <linearGradient id="adcGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={fillStart} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={fillStart} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <Tooltip
-              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6, fontSize: 11 }}
-              formatter={(v) => [Number(v ?? 0), 'ADC']}
-              labelFormatter={() => ''}
-            />
-            <ReferenceLine y={895} stroke={refColor} strokeDasharray="3 3" strokeWidth={1} />
-            <Area type="monotone" dataKey="v" stroke={stroke} strokeWidth={1.5} fill="url(#adcGrad)" dot={false} isAnimationActive={false} />
+            <Area strokeWidth={2} type="monotone" dataKey="v" stroke={strokeColor} fill="url(#adcGradient)" isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
-      <div className="flex justify-between text-[9px] text-[var(--text3)] mt-1">
-        <span>40s ago</span>
-        <span className="text-amber-500">— 895 threshold</span>
-        <span>now</span>
       </div>
     </div>
   );

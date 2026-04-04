@@ -91,9 +91,9 @@ export function GamePanel() {
   // KOMPONEN INACTIVE (Dashboard Normal)
   if (!isGameMode) {
     return (
-      <div className="card h-full min-h-[300px] flex flex-col items-center justify-center p-8 text-center text-[var(--text3)]">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-full min-h-[300px] flex flex-col items-center justify-center p-8 text-center text-slate-400 dark:text-slate-500">
         <Gamepad2 className="w-12 h-12 mb-3 opacity-50" />
-        <h3 className="text-[var(--text1)] font-semibold text-base mb-1">Arcade Standby</h3>
+        <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-base mb-1">Arcade Standby</h3>
         <p className="text-xs max-w-[200px] leading-relaxed">
           Pilih mode game (Mode 6 - 10) pada pengatur mode untuk memunculkan arena.
         </p>
@@ -103,7 +103,7 @@ export function GamePanel() {
 
   // KOMPONEN ACTIVE (Tampilan Arena Yang Ringkas dan Serasi)
   return (
-    <div className="card relative flex flex-col h-full min-h-[380px] overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative flex flex-col h-full min-h-[380px] overflow-hidden">
       {/* Countdown Overlay */}
       <AnimatePresence>
         {gameState === 'COUNTDOWN' && (
@@ -111,7 +111,7 @@ export function GamePanel() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--bg)]/80 backdrop-blur-sm"
+            className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm"
           >
             <motion.span 
               key={countdownNum}
@@ -131,10 +131,10 @@ export function GamePanel() {
         <div className="flex items-center gap-3">
           <span className="text-2xl">{gameInfo?.icon}</span>
           <div>
-            <h2 className="text-[var(--text1)] font-bold text-base leading-tight">{gameInfo?.title}</h2>
+            <h2 className="text-slate-900 dark:text-slate-100 font-bold text-base leading-tight">{gameInfo?.title}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="badge badge-purple text-[9px] px-1.5 py-0">Level {derivedLevel}</span>
-              <span className="text-[10px] text-[var(--text3)] font-medium">Bermain</span>
+              <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full font-bold text-[9px] px-1.5 py-0">Level {derivedLevel}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Bermain</span>
             </div>
           </div>
         </div>
@@ -157,45 +157,45 @@ export function GamePanel() {
       </div>
 
       {/* Instructions Box */}
-      <div className="flex-1 bg-[var(--bg2)] rounded-lg p-3 lg:p-4 mb-4 border border-[var(--border2)]">
-        <h3 className="text-[var(--text2)] text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+      <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 lg:p-4 mb-4 border border-slate-200 dark:border-slate-700">
+        <h3 className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-blue-500" /> Cara Bermain
         </h3>
-        <p className="text-[var(--text1)] text-xs leading-relaxed mb-4">
+        <p className="text-slate-900 dark:text-slate-100 text-xs leading-relaxed mb-4">
           {gameInfo?.desc}
         </p>
 
-        <h3 className="text-[var(--text2)] text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+        <h3 className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-amber-500" /> Kendali Papan
         </h3>
-        <p className="text-[var(--text3)] text-xs leading-relaxed">
+        <p className="text-slate-400 dark:text-slate-500 text-xs leading-relaxed">
           Gunakan tombol di perangkat STM32. Untuk ganti game: <b>Tekan Tombol 1 & 2 bersamaan</b>.
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 mt-auto">
-        <div className="metric-mini !items-start bg-[var(--bg2)]">
-          <div className="metric-mini-label w-full text-left">Rank & Skor</div>
+        <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col !items-start bg-slate-50 dark:bg-slate-900/50">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 w-full text-left">Rank & Skor</div>
           <div className="flex justify-between items-baseline w-full mt-1">
             <span className={`text-base font-black ${scoreData.color}`}>{scoreData.title}</span>
-            <span className="text-xs font-semibold text-[var(--text2)]">{score} pt</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{score} pt</span>
           </div>
         </div>
 
-        <div className="metric-mini !items-start bg-[var(--bg2)]">
-          <div className="metric-mini-label w-full text-left">Nyawa & Kecepatan</div>
+        <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col !items-start bg-slate-50 dark:bg-slate-900/50">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 w-full text-left">Nyawa & Kecepatan</div>
           <div className="flex justify-between items-center w-full mt-1">
             <div className="flex gap-1.5 justify-start">
               {[...Array(3)].map((_, i) => (
                 <Heart 
                   key={i} 
-                  className={`w-4 h-4 transition-colors ${i < lives ? 'fill-red-500 text-red-500' : 'fill-transparent text-[var(--border2)]'}`} 
+                  className={`w-4 h-4 transition-colors ${i < lives ? 'fill-red-500 text-red-500' : 'fill-transparent text-slate-200 dark:text-slate-700'}`} 
                 />
               ))}
             </div>
-            <div className="text-sm font-bold text-[var(--text1)] tabular-nums">
-              {avgRt}<span className="text-[10px] text-[var(--text3)] font-normal ml-0.5">ms</span>
+            <div className="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+              {avgRt}<span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal ml-0.5">ms</span>
             </div>
           </div>
         </div>
@@ -203,3 +203,4 @@ export function GamePanel() {
     </div>
   );
 }
+
