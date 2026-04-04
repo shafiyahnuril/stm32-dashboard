@@ -8,6 +8,7 @@ import { SensorCards } from "./components/monitor/SensorCards";
 import { LEDDisplay } from "./components/monitor/LEDDisplay";
 import { ADCGauge } from "./components/monitor/ADCGauge";
 import { CounterChart } from "./components/monitor/CounterChart";
+import { SensorChart } from "./components/monitor/SensorChart";
 import { EventLog } from "./components/monitor/EventLog";
 import { ModeSelector } from "./components/control/ModeSelector";
 import { ISRStatus } from "./components/control/ISRStatus";
@@ -52,6 +53,7 @@ export default function App() {
 
           {/* Col 2  Charts + Game (5 Cols) */}
           <div className="flex flex-col gap-6 lg:col-span-8">
+            <SensorChart />
             <CounterChart />
             <GamePanel />
             <EventLog />
