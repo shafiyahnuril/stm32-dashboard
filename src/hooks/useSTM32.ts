@@ -9,6 +9,8 @@ export function useSTM32() {
     pushAdcHistory,
     pushCtrHistory,
     pushRtHistory,
+    pushTempHistory,
+    pushHumHistory,
     setConnectionError,
   } = useSTM32Store();
   const dataRef = useRef(useSTM32Store.getState().data);
@@ -70,18 +72,27 @@ export function useSTM32() {
 
       client.on("message", (_topic, message) => {
         try {
-          const incoming: Partial<STM32Data> = JSON.parse(message.toString());
+          const raw = JSON.parse(message.toString());
           // Cek apakah data ini valid object dan tidak null (minimal ada field yang bisa dibaca)
-          if (!incoming || typeof incoming !== "object") {
+          if (!raw || typeof raw !== "object") {
             throw new Error("Format data tidak valid: " + message.toString());
           }
+
+          // Normalisasi nama field STM32 → STM32Data
+          // STM32 mengirim: temp, hum, dist → dashboard: temperature, humidity, distance
+          const incoming: Partial<STM32Data> = { ...raw };
+          if (raw.temp !== undefined) { incoming.temperature = raw.temp; delete (incoming as Record<string, unknown>).temp; }
+          if (raw.hum !== undefined)  { incoming.humidity    = raw.hum;  delete (incoming as Record<string, unknown>).hum;  }
+          if (raw.dist !== undefined) { incoming.distance    = raw.dist; delete (incoming as Record<string, unknown>).dist; }
 
           const next: STM32Data = { ...dataRef.current, ...incoming };
           setData(next);
 
-          if (next.adc !== undefined) pushAdcHistory(next.adc);
-          if (next.counter !== undefined) pushCtrHistory(next.counter);
-          if (next.reactionMs !== undefined) pushRtHistory(next.reactionMs);
+          if (next.adc !== undefined)         pushAdcHistory(next.adc);
+          if (next.counter !== undefined)     pushCtrHistory(next.counter);
+          if (next.reactionMs !== undefined)  pushRtHistory(next.reactionMs);
+          if (next.temperature !== undefined) pushTempHistory(next.temperature);
+          if (next.humidity !== undefined)    pushHumHistory(next.humidity);
 
           setConnectionError(null); // Clear error on successful parse
         } catch (e: unknown) {
@@ -125,6 +136,8 @@ export function useSTM32() {
     pushAdcHistory,
     pushCtrHistory,
     pushRtHistory,
+    pushTempHistory,
+    pushHumHistory,
     setConnectionError,
   ]);
 }

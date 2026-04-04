@@ -4,8 +4,9 @@ import { Layers, Activity, Target } from 'lucide-react';
 export function MetricCards() {
   const { data } = useSTM32Store();
   const modeLabels: Record<number, string> = {
-    1: 'Shift Left', 2: 'Counter Chart', 3: 'ADC Ctrl', 4: 'Train Crash',
-    5: 'Binary Cnt', 6: 'LED Pattern', 7: 'Rhythm', 8: 'Charge', 9: 'Whack', 10: 'Binary Game'
+    1: 'Shift Left', 2: 'Counter Chart', 3: 'ADC Control', 4: 'Train Crash',
+    5: 'Binary Counter', 6: 'LED Pattern', 7: 'Servo Control',
+    8: 'Rhythm Tap', 9: 'Tebak Biner', 10: 'Game Lobby',
   };
   const modeLabel = data.isrActive ? 'ISR' : modeLabels[data.mode as number] ?? 'Unknown';
 

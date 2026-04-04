@@ -5,13 +5,14 @@ import {
 
 export function SensorChart() {
   const isDark = useSTM32Store((s) => s.isDark);
-  
-  // Create mock history based on adcHistory since the store currently only tracks adc, ctr, and rt.
-  const data = useSTM32Store((s) => s.adcHistory);
-  const chartData = data.map((v, i: number) => ({
+  const tempHistory = useSTM32Store((s) => s.tempHistory);
+  const humHistory  = useSTM32Store((s) => s.humHistory);
+
+  const len = Math.max(tempHistory.length, humHistory.length);
+  const chartData = Array.from({ length: len }, (_, i) => ({
     i,
-    temperature: +(20 + (v / 200)).toFixed(1),
-    humidity: +(40 + (v / 100)).toFixed(1),
+    temperature: tempHistory[i] ?? null,
+    humidity:    humHistory[i]  ?? null,
   }));
 
   const colors = {

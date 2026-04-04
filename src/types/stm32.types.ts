@@ -11,6 +11,9 @@ export interface STM32Data {
   gameStatus?: string;
   isrActive: boolean;
   isrRemainMs: number;
+  temperature?: number;
+  humidity?: number;
+  distance?: number;
 }
 
 export interface LogEntry {

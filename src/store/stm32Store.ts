@@ -16,6 +16,8 @@ interface STM32Store {
   adcHistory: number[];
   ctrHistory: number[];
   rtHistory: number[];
+  tempHistory: number[];
+  humHistory: number[];
   isDark: boolean;
   connectionError: string | null;
   wsRef: { current: WebSocket | null } | null;
@@ -26,6 +28,8 @@ interface STM32Store {
   pushAdcHistory: (v: number) => void;
   pushCtrHistory: (v: number) => void;
   pushRtHistory: (v: number) => void;
+  pushTempHistory: (v: number) => void;
+  pushHumHistory: (v: number) => void;
   toggleTheme: () => void;
   sendCommand: (cmd: Command) => void;
 }
@@ -52,6 +56,8 @@ export const useSTM32Store = create<STM32Store>((set, get) => ({
   adcHistory: Array(40).fill(2041),
   ctrHistory: Array(40).fill(0),
   rtHistory: Array(16).fill(220),
+  tempHistory: Array(40).fill(25),
+  humHistory: Array(40).fill(60),
   isDark: false,
   connectionError: null,
 
@@ -78,6 +84,12 @@ export const useSTM32Store = create<STM32Store>((set, get) => ({
 
   pushRtHistory: (v) =>
     set((s) => ({ rtHistory: [...s.rtHistory.slice(-15), v] })),
+
+  pushTempHistory: (v) =>
+    set((s) => ({ tempHistory: [...s.tempHistory.slice(-39), v] })),
+
+  pushHumHistory: (v) =>
+    set((s) => ({ humHistory: [...s.humHistory.slice(-39), v] })),
 
   toggleTheme: () => set((s) => ({ isDark: !s.isDark })),
 

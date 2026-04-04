@@ -15,7 +15,8 @@ export function GamePanel() {
   const [countdownNum, setCountdownNum] = useState<number | string>(3);
   const [feedback, setFeedback] = useState<'CORRECT' | 'WRONG' | null>(null);
 
-  const isGameMode = typeof mode === 'number' && mode >= 7 && mode <= 10;
+  // Mode 8 = Rhythm Tap, Mode 9 = Tebak Biner, Mode 10 = Lobby pemilihan game
+  const isGameMode = typeof mode === 'number' && mode >= 8 && mode <= 10;
 
   // Hitung rata-rata waktu reaksi
   const avgRt = reactHistory.length > 0 
@@ -66,10 +67,9 @@ export function GamePanel() {
 
   const getGameInfo = (m: number) => {
     switch (m) {
-      case 7:  return { title: 'Rhythm Tap', icon: '🎵', desc: 'Lampu akan memberikan pola ketukan. Tekan Tombol 1 setelah pola selesai untuk menirunya. Jika lupa, tekan Tombol 2 untuk mendengar polanya lagi.' };
-      case 8:  return { title: 'Charge & Release', icon: '⚡', desc: 'Tahan Tombol 1 untuk mengisi energi (lampu menyala perlahan ke kanan). Lepaskan Tombol 1 tepat saat lampu menyentuh titik target!' };
-      case 9:  return { title: 'Whack-a-LED', icon: '🔨', desc: 'Lampu akan menyala acak. Jika lampu kiri (1-4) menyala, cepat tekan Tombol 1. Jika lampu kanan (5-8) menyala, cepat tekan Tombol 2!' };
-      case 10: return { title: 'Tebak Biner', icon: '🔢', desc: 'Terjemahkan angka desimal yang muncul. Tekan Tombol 1 untuk memasukkan angka "1", dan Tombol 2 untuk angka "0".' };
+      case 8:  return { title: 'Rhythm Tap', icon: '🎵', desc: 'STM32 akan memperlihatkan pola ketukan lewat LED. Setelah demo selesai, tekan Tombol 1 untuk meniru polanya. Tekan Tombol 2 untuk mendengar demo ulang.' };
+      case 9:  return { title: 'Tebak Biner', icon: '🔢', desc: 'Konversi angka desimal yang ditampilkan ke biner 8-bit. Tekan Tombol 1 untuk bit "1" dan Tombol 2 untuk bit "0". Masukkan 8 bit dari MSB ke LSB.' };
+      case 10: return { title: 'Game Lobby', icon: '🎮', desc: 'Pilih game dengan Tombol 1 (Rhythm Tap — LED8 menyala) atau Tombol 2 (Tebak Biner — LED7+LED8 menyala). Tekan BTN2 dua kali untuk memulai game yang dipilih.' };
       default: return null;
     }
   };
@@ -95,7 +95,7 @@ export function GamePanel() {
         <Gamepad2 className="w-12 h-12 mb-3 opacity-50" />
         <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-base mb-1">Arcade Standby</h3>
         <p className="text-xs max-w-[200px] leading-relaxed">
-          Pilih mode game (Mode 6 - 10) pada pengatur mode untuk memunculkan arena.
+          Tekan Tombol 1 + Tombol 2 bersamaan pada STM32, atau pilih Mode 8 / 9 dari panel Mode.
         </p>
       </div>
     );

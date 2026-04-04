@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useSTM32Store } from "../../store/stm32Store";
 
 const MODES = [
@@ -8,26 +7,22 @@ const MODES = [
   { n: 4, label: "Mode 4", sub: "Train Crash" },
   { n: 5, label: "Mode 5", sub: "Binary Counter" },
   { n: 6, label: "Mode 6", sub: "LED Pattern" },
+  { n: 7, label: "Mode 7", sub: "Servo Control" },
 ] as const;
 
+// Mode 8 & 9 aktif via BTN1+BTN2 di hardware (lobby → pilih game).
+// Tombol ini mengirim SET_MODE ke STM32 sebagai shortcut.
 const GAME_MODES = [
-  { n: 7, label: "Rhythm Tap", sub: "Mode 7" },
-  { n: 10, label: "Binary Game", sub: "Mode 10" },
+  { n: 8, label: "Rhythm Tap", sub: "Mode 8" },
+  { n: 9, label: "Tebak Biner", sub: "Mode 9" },
 ] as const;
 
 export function ModeSelector() {
   const { data, sendCommand } = useSTM32Store();
   const currentMode = data.mode === "ISR" ? null : data.mode;
-
-  const [isrProgress, setIsrProgress] = useState(0);
-
-  useEffect(() => {
-    if (data.isrActive) {
-      setIsrProgress(Math.round(((5000 - data.isrRemainMs) / 5000) * 100));     
-    } else {
-      setIsrProgress(0);
-    }
-  }, [data.isrActive, data.isrRemainMs]);
+  const isrProgress = data.isrActive
+    ? Math.round(((5000 - data.isrRemainMs) / 5000) * 100)
+    : 0;
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50">
