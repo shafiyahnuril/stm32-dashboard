@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSTM32Store } from "../../store/stm32Store";
 
 const MODES = [
@@ -20,49 +21,82 @@ const GAME_MODES = [
 export function ModeSelector() {
   const { data, sendCommand } = useSTM32Store();
   const currentMode = data.mode === "ISR" ? null : data.mode;
+
+  // Timer frontend untuk mengurus countdown ISR State
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (data.isrActive && data.isrRemainMs > 0) {
+      interval = setInterval(() => {
+        useSTM32Store.setState((state) => {
+          const remain = Math.max(0, state.data.isrRemainMs - 100);
+          return {
+            data: {
+              ...state.data,
+              isrRemainMs: remain,
+              isrActive: remain > 0,
+            },
+          };
+        });
+      }, 100);
+    } else if (data.isrActive && data.isrRemainMs <= 0) {
+      useSTM32Store.setState((state) => ({
+        data: { ...state.data, isrActive: false },
+      }));
+    }
+    return () => clearInterval(interval);
+  }, [data.isrActive, data.isrRemainMs]);
+
   const isrProgress = data.isrActive
     ? Math.round(((5000 - data.isrRemainMs) / 5000) * 100)
     : 0;
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50">
-      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80">Modes</h3>
+      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80">
+        Modes
+      </h3>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         {MODES.map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}   
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
             disabled={data.isrActive}
             className={`p-3 rounded-xl border text-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
-                currentMode === n
-                  ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105"
-                  : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm"
-              }`}
+              currentMode === n
+                ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105"
+                : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm"
+            }`}
           >
             <div className="font-semibold text-sm">{label}</div>
-            <div className={`text-[10px] mt-1 ${currentMode === n ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+            <div
+              className={`text-[10px] mt-1 ${currentMode === n ? "text-blue-100" : "text-slate-500 dark:text-slate-400"}`}
+            >
               {sub}
             </div>
           </button>
         ))}
       </div>
 
-      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80 mt-2">Game Modes</h3>
+      <h3 className="text-slate-900 dark:text-slate-100 font-bold mb-4 tracking-tight uppercase text-xs opacity-80 mt-2">
+        Game Modes
+      </h3>
       <div className="grid grid-cols-2 gap-3 mb-6">
         {GAME_MODES.map(({ n, label, sub }) => (
           <button
             key={n}
-            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}   
+            onClick={() => sendCommand({ type: "SET_MODE", mode: n as any })}
             disabled={data.isrActive}
             className={`p-4 rounded-xl border text-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
-                currentMode === n
-                  ? "bg-purple-500 border-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105"
-                  : "bg-purple-50/50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40"
-              }`}
+              currentMode === n
+                ? "bg-purple-500 border-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105"
+                : "bg-purple-50/50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40"
+            }`}
           >
             <div className="font-semibold text-md">{label}</div>
-            <div className={`text-xs mt-1 ${currentMode === n ? 'text-purple-100' : 'text-purple-400 dark:text-purple-500'}`}>
+            <div
+              className={`text-xs mt-1 ${currentMode === n ? "text-purple-100" : "text-purple-400 dark:text-purple-500"}`}
+            >
               {sub}
             </div>
           </button>
@@ -75,7 +109,9 @@ export function ModeSelector() {
           disabled={data.isrActive}
           className="col-span-2 py-4 px-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-md shadow-red-500/20 transition-all border border-red-600 disabled:opacity-50"
         >
-          {data.isrActive ? `ISR Active (${(data.isrRemainMs / 1000).toFixed(1)}s)` : "TRIGGER ISR"}
+          {data.isrActive
+            ? `ISR Active (${(data.isrRemainMs / 1000).toFixed(1)}s)`
+            : "TRIGGER ISR"}
         </button>
         <button
           onClick={() => sendCommand({ type: "LED_ALL_ON" })}
@@ -100,11 +136,10 @@ export function ModeSelector() {
             />
           </div>
           <p className="text-center text-xs font-medium text-red-500 animate-pulse">
-            ISR Active  Returning in {(data.isrRemainMs / 1000).toFixed(1)}s
+            ISR Active Returning in {(data.isrRemainMs / 1000).toFixed(1)}s
           </p>
         </div>
       )}
     </div>
   );
 }
-
