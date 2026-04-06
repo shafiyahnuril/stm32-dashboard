@@ -2,9 +2,10 @@ import serial
 import paho.mqtt.client as mqtt
 import time
 import json
+import re
 
 # --- PENGATURAN SERIAL ---
-SERIAL_PORT = 'COM3'  # Ganti dengan nomor COM STM32 Anda
+SERIAL_PORT = 'COM5'  # Ganti dengan nomor COM STM32 Anda
 BAUD_RATE = 115200
 
 # --- PENGATURAN MQTT ---
@@ -78,10 +79,43 @@ try:
             # Baris non-JSON (misal: "RHYTHM,LEVEL:2,SCORE:340,..." dari game)
             # di-skip agar tidak menyebabkan parse error di dashboard
             if line.startswith('{'):
-                print(f"[Upload] {line}")
+                print(f"[Upload JSON] {line}")
                 client.publish(TOPIC_SENSOR, line)
+            elif line.startswith('RHYTHM,'):
+                if 'SESSION_END' in line:
+                    msg = '{"gameStatus":"GAME_OVER"}'
+                    print(f"[Upload GameStatus] {msg}")
+                    client.publish(TOPIC_SENSOR, msg)
+                else:
+                    # Format: RHYTHM,LEVEL:x,SCORE:y,ERR0:a,ERR1:b,AVG:z
+                    # Kita klasifikasikan AVG ke status PERFECT/NEAR/MISS
+                    res = re.search(r'AVG:(-?\d+)', line)
+                    if res:
+                        avg_val = abs(int(res.group(1)))
+                        if avg_val <= 50:
+                            status = "PERFECT"
+                        elif avg_val <= 150:
+                            status = "NEAR"
+                        else:
+                            status = "MISS"
+                        msg = '{"gameStatus":"' + status + '"}'
+                        print(f"[Upload RhythmStatus] {msg}")
+                        client.publish(TOPIC_SENSOR, msg)
+            elif line.startswith('BINARY,'):
+                if 'SESSION_END' in line:
+                    score_match = re.search(r'SCORE:(\d+)', line)
+                    round_match = re.search(r'ROUNDS:(\d+)', line)
+                    if score_match and round_match:
+                        s = int(score_match.group(1))
+                        # r = int(round_match.group(1))
+                        if s >= 10:
+                            msg = '{"gameStatus":"PERFECT_SCORE"}'
+                        else:
+                            msg = '{"gameStatus":"GAME_OVER"}'
+                        print(f"[Upload GameStatus] {msg}")
+                        client.publish(TOPIC_SENSOR, msg)
             else:
-                # Abaikan output teks dari rhythm game / binary game
+                # Abaikan output teks lain dari rhythm game / binary game
                 print(f"[Skip]   {line}")
 
 except KeyboardInterrupt:

@@ -1,7 +1,11 @@
-export type AppMode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'ISR';
+export type AppMode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "ISR";
 
 export interface STM32Data {
   mode: AppMode;
+  gameLobby?: number;
+  binaryTarget?: number;
+  binaryRound?: number;
+  rhythmLevel?: number;
   adc: number;
   ledMask: number;
   counter: number;
@@ -19,13 +23,13 @@ export interface STM32Data {
 export interface LogEntry {
   id: number;
   ts: string;
-  type: 'MODE' | 'ISR' | 'CMD' | 'SYS' | 'GAME';
+  type: "MODE" | "ISR" | "CMD" | "SYS" | "GAME";
   msg: string;
 }
 
 export type Command =
-  | { type: 'SET_MODE'; mode: AppMode }
-  | { type: 'TRIGGER_ISR' }
-  | { type: 'LED_ALL_ON' }
-  | { type: 'LED_ALL_OFF' }
-  | { type: 'RESET_STATS' };
+  | { type: "SET_MODE"; mode: AppMode }
+  | { type: "TRIGGER_ISR" }
+  | { type: "LED_ALL_ON" }
+  | { type: "LED_ALL_OFF" }
+  | { type: "RESET_STATS" };
