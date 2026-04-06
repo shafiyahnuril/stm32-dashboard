@@ -227,6 +227,7 @@ export function GamePanel() {
     gameStatus,
   } = useSTM32Store((s) => s.data);
   const rtHistory = useSTM32Store((s) => s.rtHistory);
+  const setData = useSTM32Store((s) => s.setData);
 
   const prevScore = useRef(score);
   const prevLives = useRef(lives);
@@ -276,12 +277,19 @@ export function GamePanel() {
     }
   }, [score, mode, gameState, binaryRound]);
 
+  const lastProcessedGameStatus = useRef<string | undefined>(gameStatus);
+
   /* ── detect GAME OVER / PERFECT based on JSON msg ── */
   useEffect(() => {
     if (gameState !== "PLAYING") return;
-    if (gameStatus === "GAME_OVER") {
+    if (
+      gameStatus === "GAME_OVER" &&
+      lastProcessedGameStatus.current !== "GAME_OVER"
+    ) {
       setShowGameOver(true);
-      setTimeout(() => setShowGameOver(false), 3200);
+      const t = setTimeout(() => setShowGameOver(false), 3200);
+      lastProcessedGameStatus.current = "GAME_OVER";
+      return () => clearTimeout(t);
     }
   }, [gameStatus, gameState]);
 
@@ -289,13 +297,18 @@ export function GamePanel() {
   useEffect(() => {
     if (mode !== 9 || gameState !== "PLAYING") return;
     if (
-      gameStatus === "PERFECT_SCORE" ||
-      (answeredBinary >= 10 && score >= 10)
+      (gameStatus === "PERFECT_SCORE" &&
+        lastProcessedGameStatus.current !== "PERFECT_SCORE") ||
+      (answeredBinary >= 10 && score >= 10 && !showPerfect)
     ) {
       setShowPerfect(true);
-      setTimeout(() => setShowPerfect(false), 3200);
+      const t = setTimeout(() => setShowPerfect(false), 3200);
+      if (gameStatus === "PERFECT_SCORE") {
+        lastProcessedGameStatus.current = "PERFECT_SCORE";
+      }
+      return () => clearTimeout(t);
     }
-  }, [answeredBinary, score, mode, gameState, gameStatus]);
+  }, [answeredBinary, score, mode, gameState, gameStatus, showPerfect]);
 
   /* ── CORRECT / WRONG feedback ── */
   useEffect(() => {
@@ -322,6 +335,10 @@ export function GamePanel() {
       if (mode !== prevMode.current) {
         setBinaryQ(0);
         prevBinaryScore.current = score;
+        lastProcessedGameStatus.current = undefined; // reset so we can trigger again
+        setShowGameOver(false);
+        setShowPerfect(false);
+        setData({ ...useSTM32Store.getState().data, gameStatus: undefined });
         startCountdown();
       }
     } else if (mode === 10) {
@@ -329,8 +346,7 @@ export function GamePanel() {
       // Let the timeouts naturally close the game over / perfect overlays
     } else if (!isGameMode) {
       setGameState("IDLE");
-      setShowGameOver(false);
-      setShowPerfect(false);
+      setPopStatus(null);
     }
     prevMode.current = mode;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -777,9 +793,14 @@ export function GamePanel() {
             ) : (
               <>
                 <span
-                  className={`text-base font-black ${isRhythm && gameStatus ? (gameStatus === "PERFECT" ? "text-emerald-500" : gameStatus === "MISS" ? "text-red-500" : "text-amber-500") : scoreData.color}`}
+                  className={`text-base font-black ${isRhythm && gameStatus && gameStatus !== "GAME_OVER" && gameStatus !== "PERFECT_SCORE" ? (gameStatus === "PERFECT" ? "text-emerald-500" : gameStatus === "MISS" ? "text-red-500" : "text-amber-500") : scoreData.color}`}
                 >
-                  {isRhythm && gameStatus ? gameStatus : scoreData.title}
+                  {isRhythm &&
+                  gameStatus &&
+                  gameStatus !== "GAME_OVER" &&
+                  gameStatus !== "PERFECT_SCORE"
+                    ? gameStatus
+                    : scoreData.title}
                 </span>
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {score} pt
